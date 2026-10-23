@@ -1,0 +1,636 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#faf7f2" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#1c1a18" media="(prefers-color-scheme: dark)">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Штучка">
+<title>Штучка Ноэльки</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🩺</text></svg>">
+<style>
+:root {
+  color-scheme: light dark;
+  --bg: #faf7f2; --color-panel: #ffffff; --fg: #2a2522; --color-fg-muted: #857c74; --color-border-line: #e7e0d7;
+  --color-ok: #2f9e44; --color-bad: #e03131; --nk-accent-base: #c96442;
+  --font-anthropic-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --font-anthropic-serif: "Iowan Old Style", "Palatino Linotype", Palatino, Georgia, "Times New Roman", serif;
+  --cds-font-size-caption: .8125rem; --cds-font-size-body: .9375rem; --cds-font-size-heading: 1.125rem;
+  --cds-font-weight-medium: 600; --cds-radius: .625rem;
+  --cds-gap-xs: .25rem; --cds-gap-md: 1rem; --cds-gap-xl: 1.75rem; --cds-pad-sm: .5rem; --cds-pad-lg: 1.1rem;
+}
+@media (prefers-color-scheme: dark) {
+  :root { --bg: #1c1a18; --color-panel: #262321; --fg: #f1ece6; --color-fg-muted: #a39a91; --color-border-line: #3a3633; --color-ok: #69db7c; --color-bad: #ff6b6b; --nk-accent-base: #e08a6a; }
+}
+* { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; scroll-padding-top: env(safe-area-inset-top, 0px); }
+body { margin: 0; background: var(--bg); color: var(--fg); font-family: var(--font-anthropic-sans);
+  padding: calc(env(safe-area-inset-top, 0px) + 1rem) 1rem calc(env(safe-area-inset-bottom, 0px) + 2rem); }
+
+.nk { --nk-accent: var(--nk-accent-base); display: flex; flex-direction: column; gap: var(--cds-gap-xl); font-family: var(--font-anthropic-sans); max-width: 60rem; margin-inline: auto; }
+.nk-head { display: flex; flex-direction: column; gap: var(--cds-gap-xs); padding-top: var(--cds-pad-sm); }
+.nk-eyebrow { font-size: var(--cds-font-size-caption); letter-spacing: .08em; text-transform: uppercase; color: var(--nk-accent); font-weight: var(--cds-font-weight-medium); margin: 0; }
+.nk-title { font-family: var(--font-anthropic-serif); font-weight: 400; font-size: clamp(2rem, 6vw, 3rem); line-height: 1.05; margin: 0; text-wrap: balance; }
+.nk-sub { color: var(--color-fg-muted); font-size: var(--cds-font-size-body); margin: 0; }
+.nk-clock { color: var(--color-fg-muted); font-size: var(--cds-font-size-caption); font-variant-numeric: tabular-nums; }
+
+.nk-sem { display: flex; flex-direction: column; gap: .5rem; }
+.nk-sem-row { display: flex; justify-content: space-between; gap: 1rem; font-size: var(--cds-font-size-caption); color: var(--color-fg-muted); font-variant-numeric: tabular-nums; }
+.nk-sem-row b { color: inherit; font-weight: var(--cds-font-weight-medium); }
+.nk-bar { position: relative; height: .5rem; border-radius: 999px; background: var(--color-border-line); overflow: hidden; }
+.nk-bar > i { position: absolute; inset: 0 auto 0 0; border-radius: inherit; background: var(--nk-accent); transition: width .6s ease; }
+
+.nk-hero { display: grid; gap: var(--cds-gap-md); grid-template-columns: repeat(auto-fit, minmax(min(100%, 18rem), 1fr)); }
+.nk-card { background: var(--color-panel); border: 1px solid var(--color-border-line); border-radius: calc(var(--cds-radius) * 1.5); padding: var(--cds-pad-lg); display: flex; flex-direction: column; gap: .6rem; min-width: 0; }
+.nk-card.now { border-color: color-mix(in srgb, var(--nk-accent) 55%, var(--color-border-line)); box-shadow: 0 0 0 3px color-mix(in srgb, var(--nk-accent) 12%, transparent); }
+.nk-label { display: flex; align-items: center; gap: .45rem; font-size: var(--cds-font-size-caption); color: var(--color-fg-muted); text-transform: uppercase; letter-spacing: .06em; margin: 0; }
+.nk-live { width: .5rem; height: .5rem; border-radius: 50%; background: var(--nk-accent); box-shadow: 0 0 0 0 color-mix(in srgb, var(--nk-accent) 60%, transparent); animation: nkpulse 2s infinite; }
+@keyframes nkpulse { 70% { box-shadow: 0 0 0 .5rem transparent; } 100% { box-shadow: 0 0 0 0 transparent; } }
+@media (prefers-reduced-motion: reduce) { .nk-live { animation: none; } }
+.nk-name { font-family: var(--font-anthropic-serif); font-size: clamp(1.35rem, 3.5vw, 1.75rem); line-height: 1.2; margin: 0; text-wrap: balance; }
+.nk-meta { font-size: var(--cds-font-size-body); color: var(--color-fg-muted); margin: 0; font-variant-numeric: tabular-nums; }
+.nk-big { font-family: var(--font-anthropic-serif); font-size: clamp(2.5rem, 8vw, 3.5rem); line-height: 1; font-variant-numeric: tabular-nums; }
+.nk-big small { font-family: var(--font-anthropic-sans); font-size: var(--cds-font-size-body); color: var(--color-fg-muted); margin-left: .35rem; }
+
+.nk-h2 { font-size: var(--cds-font-size-heading); font-weight: var(--cds-font-weight-medium); margin: 0; }
+.nk-tl { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; }
+.nk-tl li { display: grid; grid-template-columns: 7.5rem 1.5rem 1fr; gap: .25rem .5rem; align-items: start; position: relative; }
+.nk-tl .when { font-size: var(--cds-font-size-caption); color: var(--color-fg-muted); text-align: right; padding-top: .7rem; font-variant-numeric: tabular-nums; }
+.nk-tl .rail { position: relative; align-self: stretch; display: flex; justify-content: center; }
+.nk-tl .rail::before { content: ""; position: absolute; top: 0; bottom: 0; width: 2px; background: var(--color-border-line); }
+.nk-tl li:first-child .rail::before { top: 1rem; }
+.nk-tl li:last-child .rail::before { bottom: calc(100% - 1rem); }
+.nk-tl .dot { position: relative; margin-top: .8rem; width: .75rem; height: .75rem; border-radius: 50%; background: var(--color-panel); border: 2px solid var(--color-fg-muted); }
+.nk-tl .body { padding: .5rem .75rem; margin: .15rem 0; border-radius: var(--cds-radius); display: flex; flex-wrap: wrap; align-items: baseline; gap: .15rem .6rem; }
+.nk-tl .t { font-weight: var(--cds-font-weight-medium); }
+.nk-tl .s { font-size: var(--cds-font-size-caption); color: var(--color-fg-muted); }
+.nk-tl li.past .t, .nk-tl li.past .when { color: var(--color-fg-muted); font-weight: 400; }
+.nk-tl li.past .dot { background: var(--color-fg-muted); border-color: var(--color-fg-muted); opacity: .5; }
+.nk-tl li.cur .body { background: color-mix(in srgb, var(--nk-accent) 10%, transparent); }
+.nk-tl li.cur .dot { border-color: var(--nk-accent); background: var(--nk-accent); box-shadow: 0 0 0 4px color-mix(in srgb, var(--nk-accent) 20%, transparent); }
+.nk-tl li.off .dot { border-color: var(--color-ok); }
+.nk-tl li.off .t { color: var(--color-ok); }
+.nk-tl li.exam .dot { border-color: var(--color-bad); }
+.nk-tag { font-size: var(--cds-font-size-caption); border-radius: 999px; padding: 0 .5rem; border: 1px solid currentColor; color: var(--nk-accent); }
+@media (max-width: 34rem) { .nk-tl li { grid-template-columns: 4.8rem 1.25rem 1fr; } }
+.nk-fail { color: var(--color-fg-muted); font-size: var(--cds-font-size-caption); }
+.nk-play { position: fixed; inset: 0; width: 100%; height: 100%; z-index: 0; pointer-events: none; opacity: .9; }
+.nk { position: relative; z-index: 1; }
+.nk-chips { display: flex; flex-wrap: wrap; gap: .4rem; margin-top: .25rem; }
+.nk-chip { display: inline-flex; align-items: center; gap: .3rem; font-size: var(--cds-font-size-caption); border: 1px solid var(--color-border-line); background: var(--color-panel); border-radius: 999px; padding: .1rem .6rem; font-variant-numeric: tabular-nums; }
+.nk-grid2 { display: grid; gap: var(--cds-gap-md); grid-template-columns: repeat(auto-fit, minmax(min(100%, 18rem), 1fr)); }
+.nk-card h3 { font-size: var(--cds-font-size-body); font-weight: var(--cds-font-weight-medium); margin: 0; }
+.nk-todo-form { display: flex; gap: .4rem; }
+.nk-input { flex: 1; min-width: 0; font: inherit; font-size: 16px; color: inherit; background: transparent; border: 1px solid var(--color-border-line); border-radius: var(--cds-radius); padding: .45rem .6rem; }
+.nk-input:focus { outline: 2px solid color-mix(in srgb, var(--nk-accent) 50%, transparent); outline-offset: 1px; }
+.nk-btn { font: inherit; font-size: var(--cds-font-size-body); color: #fff; background: var(--nk-accent); border: 0; border-radius: var(--cds-radius); padding: .45rem .8rem; cursor: pointer; }
+.nk-btn.ghost { color: var(--color-fg-muted); background: transparent; border: 1px solid var(--color-border-line); padding: .2rem .6rem; font-size: var(--cds-font-size-caption); }
+.nk-todos { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: .15rem; }
+.nk-todos li { display: flex; align-items: center; gap: .5rem; padding: .3rem 0; border-bottom: 1px solid var(--color-border-line); }
+.nk-todos li:last-child { border-bottom: 0; }
+.nk-todos input[type=checkbox] { width: 1.1rem; height: 1.1rem; accent-color: var(--nk-accent); flex: none; }
+.nk-todos .txt { flex: 1; min-width: 0; overflow-wrap: anywhere; }
+.nk-todos li.done .txt { text-decoration: line-through; color: var(--color-fg-muted); }
+.nk-x { border: 0; background: transparent; color: var(--color-fg-muted); font-size: 1.1rem; line-height: 1; cursor: pointer; padding: .2rem .35rem; }
+.nk-empty { color: var(--color-fg-muted); font-size: var(--cds-font-size-caption); margin: 0; }
+.nk-cd { display: flex; flex-direction: column; gap: .5rem; }
+.nk-cd-row { display: flex; align-items: center; justify-content: space-between; gap: .75rem; padding: .35rem 0; border-bottom: 1px solid var(--color-border-line); }
+.nk-cd-row:last-child { border-bottom: 0; }
+.nk-cd-row .n { font-family: var(--font-anthropic-serif); font-size: 1.5rem; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.nk-cd-row .n small { font-family: var(--font-anthropic-sans); font-size: var(--cds-font-size-caption); color: var(--color-fg-muted); margin-left: .25rem; }
+.nk-cd-row input[type=date] { font: inherit; font-size: 16px; color: inherit; background: transparent; border: 1px solid var(--color-border-line); border-radius: var(--cds-radius); padding: .2rem .4rem; }
+.nk-tl .body { cursor: pointer; }
+.nk-tl .body:hover { background: color-mix(in srgb, var(--color-fg-muted) 8%, transparent); }
+.nk-tl .has-note::after { content: "📝"; font-size: .8rem; }
+.nk-note-box { grid-column: 3; margin: 0 0 .5rem .75rem; display: flex; flex-direction: column; gap: .3rem; }
+.nk-note-box textarea { font: inherit; font-size: 16px; color: inherit; background: var(--color-panel); border: 1px solid var(--color-border-line); border-radius: var(--cds-radius); padding: .5rem .6rem; min-height: 5rem; resize: vertical; }
+.nk-hint { font-size: var(--cds-font-size-caption); color: var(--color-fg-muted); margin: 0; }
+.nk-today-big { font-family: var(--font-anthropic-serif); font-size: clamp(2.2rem, 7vw, 3rem); line-height: 1; font-variant-numeric: tabular-nums; }
+</style>
+</head>
+<body>
+<canvas class="nk-play" aria-hidden="true"></canvas>
+
+<div class="nk">
+  <header class="nk-head">
+    <p class="nk-eyebrow">6 курс · группа 35 · осень 2026</p>
+    <h1 class="nk-title">Штучка Ноэльки</h1>
+    <p class="nk-sub" id="takeaway">—</p>
+    <div class="nk-chips">
+      <span class="nk-chip" id="clock"></span>
+      <span class="nk-chip" id="streak" hidden></span>
+      <span class="nk-chip" id="mood" hidden></span>
+    </div>
+  </header>
+
+  <section class="nk-sem" aria-label="Прогресс семестра">
+    <div class="nk-sem-row"><span id="sem-left">Семестр</span><span id="sem-right"></span></div>
+    <div class="nk-bar"><i id="sem-bar" style="width:0"></i></div>
+  </section>
+
+  <section class="nk-hero">
+    <div class="nk-card" id="today-card">
+      <p class="nk-label">Сегодня</p>
+      <div class="nk-today-big" id="today-big">—</div>
+      <p class="nk-meta" id="today-meta"></p>
+      <div class="nk-bar" id="today-barbox" hidden><i id="today-bar" style="width:0"></i></div>
+    </div>
+    <div class="nk-card now" id="now-card">
+      <p class="nk-label"><span class="nk-live"></span><span id="now-label">Сейчас</span></p>
+      <p class="nk-name" id="now-name">—</p>
+      <p class="nk-meta" id="now-meta"></p>
+      <div class="nk-bar" id="now-barbox"><i id="now-bar" style="width:0"></i></div>
+      <p class="nk-meta" id="now-left"></p>
+    </div>
+    <div class="nk-card" id="next-card">
+      <p class="nk-label">Дальше</p>
+      <div class="nk-big" id="next-count"></div>
+      <p class="nk-name" id="next-name">—</p>
+      <p class="nk-meta" id="next-meta"></p>
+    </div>
+  </section>
+
+  <section class="nk-grid2">
+    <div class="nk-card">
+      <h3>Дела</h3>
+      <div class="nk-todo-form" id="todo-form">
+        <input class="nk-input" id="todo-input" placeholder="Отработка, дневник практики…" maxlength="200" enterkeyhint="done" autocomplete="off" aria-label="Новое дело">
+        <button class="nk-btn" id="todo-add" type="button">Добавить</button>
+      </div>
+      <ul class="nk-todos" id="todos"></ul>
+      <p class="nk-empty" id="todo-empty">Пока пусто. Добавь первое дело.</p>
+      <div><button class="nk-btn ghost" id="todo-clear" type="button" hidden>Убрать выполненные</button></div>
+    </div>
+    <div class="nk-card">
+      <h3>Отсчёты</h3>
+      <div class="nk-cd" id="countdowns"></div>
+      <p class="nk-hint">Даты аккредитации и ГИА поставь сама, когда их объявят.</p>
+    </div>
+  </section>
+
+  <section style="display:flex;flex-direction:column;gap:var(--cds-gap-md)">
+    <h2 class="nk-h2">Весь семестр</h2>
+    <p class="nk-hint" style="margin-top:-.5rem">Нажми на цикл, чтобы оставить заметку.</p>
+    <ol class="nk-tl" id="tl"></ol>
+  </section>
+  <p class="nk-hint">Дела, заметки и даты хранятся только на этом устройстве.</p>
+</div>
+
+<script>
+const DATA = [{"id": "g35-01", "date": "2026-09-01", "end": "2026-09-16", "title": "Педиатрия + клиническая фармакология", "time": "до 14:10, фарма 15:05–19:10", "kind": "цикл"}, {"id": "g35-02", "date": "2026-09-17", "end": "2026-10-02", "title": "Инфекционные болезни", "time": "до 14:10", "kind": "цикл"}, {"id": "g35-03", "date": "2026-10-05", "end": "2026-10-15", "title": "Поликлиническая терапия", "time": "до 17:30", "kind": "цикл"}, {"id": "g35-04", "date": "2026-10-16", "end": "2026-11-06", "title": "Практика общеврачебного профиля", "time": "до 15:05", "kind": "цикл"}, {"id": "g35-05", "date": "2026-11-04", "end": "2026-11-04", "title": "Выходной", "time": "праздник", "kind": "выходной"}, {"id": "g35-06", "date": "2026-11-09", "end": "2026-11-17", "title": "Онкология", "time": "до 15:05", "kind": "цикл"}, {"id": "g35-07", "date": "2026-11-18", "end": "2026-11-26", "title": "Эпидемиология", "time": "до 13:25", "kind": "цикл"}, {"id": "g35-08", "date": "2026-11-27", "end": "2026-12-07", "title": "Судебная медицина", "time": "до 15:50", "kind": "цикл"}, {"id": "g35-09", "date": "2026-12-08", "end": "2026-12-16", "title": "Профессиональные болезни", "time": "до 14:10", "kind": "цикл"}, {"id": "g35-10", "date": "2026-12-17", "end": "2026-12-25", "title": "Трансплантология", "time": "до 13:25", "kind": "цикл"}, {"id": "g35-11", "date": "2026-12-28", "end": "2027-01-14", "title": "Детская хирургия", "time": "до 15:50", "kind": "цикл"}, {"id": "g35-12", "date": "2026-12-31", "end": "2027-01-10", "title": "Новогодние каникулы", "time": "", "kind": "выходной"}, {"id": "g35-13", "date": "2027-01-15", "end": "2027-01-22", "title": "ДВ", "time": "до 16:45", "kind": "цикл"}, {"id": "g35-14", "date": "2027-01-25", "end": "2027-01-29", "title": "Зачётная неделя", "time": "", "kind": "зачёт"}];
+</script>
+<script>
+(() => {
+  const root = document.querySelector('.nk');
+  const months = ['янв', 'фев', 'мар', 'апр', 'мая', 'июн', 'июл', 'авг', 'сен', 'окт', 'ноя', 'дек'];
+  const SEM_START = '2026-09-01', SEM_END = '2027-01-29', HOLIDAYS = '2026-12-31';
+  const pad = (n) => String(n).padStart(2, '0');
+  const dstr = (n) => n.getFullYear() + '-' + pad(n.getMonth() + 1) + '-' + pad(n.getDate());
+  const today = () => dstr(new Date());
+  const ms = (s) => Date.parse(s + 'T00:00:00Z');
+  const diff = (a, b) => Math.round((ms(b) - ms(a)) / 864e5);
+  const fd = (s) => { const [y, m, d] = s.split('-').map(Number); return d + ' ' + months[m - 1]; };
+  const range = (a, b) => a === b ? fd(a) : (a.slice(0, 7) === b.slice(0, 7) ? Number(a.slice(8)) + '–' + fd(b) : fd(a) + ' – ' + fd(b));
+  const plural = (n, a, b, c) => { const m10 = n % 10, m100 = n % 100; return m10 === 1 && m100 !== 11 ? a : m10 >= 2 && m10 <= 4 && (m100 < 12 || m100 > 14) ? b : c; };
+  const days = (n) => n + ' ' + plural(n, 'день', 'дня', 'дней');
+  const $ = (id) => document.getElementById(id);
+  const el = (tag, cls, text) => { const e = document.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = text; return e; };
+
+  // хранилище на устройстве
+  const store = {
+    get(k, d) { try { const v = localStorage.getItem('nk:' + k); return v == null ? d : JSON.parse(v); } catch (e) { return d; } },
+    set(k, v) { try { localStorage.setItem('nk:' + k, JSON.stringify(v)); } catch (e) { } },
+  };
+
+  // общее состояние для агентов
+  window.nkMood = { mode: 'normal' };
+
+  // ---- стрик ----
+  (function streak() {
+    const t = today();
+    let visits = store.get('visits', []);
+    if (!Array.isArray(visits)) visits = [];
+    if (!visits.includes(t)) { visits.push(t); visits = visits.slice(-400); store.set('visits', visits); }
+    const set = new Set(visits);
+    let n = 0; const d = new Date();
+    while (set.has(dstr(d))) { n++; d.setDate(d.getDate() - 1); }
+    const s = $('streak'); s.hidden = false;
+    s.textContent = '🔥 ' + n + ' ' + plural(n, 'день', 'дня', 'дней') + ' подряд';
+  })();
+
+  // ---- дела ----
+  let todos = store.get('todos', []);
+  if (!Array.isArray(todos)) todos = [];
+  function drawTodos() {
+    const ul = $('todos');
+    ul.replaceChildren(...todos.map((it) => {
+      const li = el('li', it.done ? 'done' : '');
+      const cb = el('input'); cb.type = 'checkbox'; cb.checked = !!it.done; cb.setAttribute('aria-label', 'Выполнено');
+      cb.addEventListener('change', () => { it.done = cb.checked; store.set('todos', todos); drawTodos(); });
+      const x = el('button', 'nk-x', '×'); x.type = 'button'; x.setAttribute('aria-label', 'Удалить');
+      x.addEventListener('click', () => { todos = todos.filter((o) => o !== it); store.set('todos', todos); drawTodos(); });
+      li.append(cb, el('span', 'txt', it.text), x);
+      return li;
+    }));
+    $('todo-empty').hidden = todos.length > 0;
+    $('todo-clear').hidden = !todos.some((o) => o.done);
+  }
+  const addTodo = () => {
+    const v = $('todo-input').value.trim();
+    if (!v) return;
+    todos.push({ id: Date.now().toString(36), text: v, done: false });
+    store.set('todos', todos); $('todo-input').value = ''; drawTodos();
+  };
+  $('todo-add').addEventListener('click', addTodo);
+  $('todo-input').addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); addTodo(); } });
+  $('todo-clear').addEventListener('click', () => { todos = todos.filter((o) => !o.done); store.set('todos', todos); drawTodos(); });
+  drawTodos();
+
+  // ---- отсчёты ----
+  function drawCountdowns() {
+    const t = today(), box = $('countdowns');
+    if (box.contains(document.activeElement)) return;
+    const dates = store.get('dates', {});
+    const rows = [
+      { k: 'holidays', title: 'Новогодние каникулы', date: HOLIDAYS, fixed: true },
+      { k: 'accr', title: 'Аккредитация', date: dates.accr || '' },
+      { k: 'gia', title: 'ГИА', date: dates.gia || '' },
+    ];
+    box.replaceChildren(...rows.map((r) => {
+      const row = el('div', 'nk-cd-row');
+      const left = el('div'); left.append(el('div', '', r.title));
+      if (r.fixed) left.append(el('div', 'nk-hint', fd(r.date)));
+      else {
+        const inp = el('input'); inp.type = 'date'; inp.value = r.date; inp.min = '2026-01-01'; inp.max = '2028-12-31'; inp.setAttribute('aria-label', 'Дата: ' + r.title);
+        inp.addEventListener('change', () => { const ds = store.get('dates', {}); ds[r.k] = inp.value || undefined; store.set('dates', ds); inp.blur(); drawCountdowns(); });
+        left.append(inp);
+      }
+      const n = el('div', 'n');
+      if (r.date) {
+        const dd = diff(t, r.date);
+        if (dd > 0) { n.append(document.createTextNode(String(dd))); n.append(el('small', '', plural(dd, 'день', 'дня', 'дней'))); }
+        else n.textContent = dd === 0 ? 'Сегодня!' : '✓';
+      } else n.textContent = '—';
+      row.append(left, n);
+      return row;
+    }));
+  }
+
+  // ---- «сегодня до скольки» ----
+  function endTime(r) { const m = /до (\d{1,2}):(\d{2})/.exec((r && r.time) || ''); return m ? [Number(m[1]), Number(m[2])] : null; }
+  function drawToday(rows, now) {
+    const t = dstr(now), wd = now.getDay();
+    const off = rows.find((r) => r.kind === 'выходной' && r.date <= t && t <= r.end);
+    const cur = rows.find((r) => r.kind !== 'выходной' && r.date <= t && t <= r.end);
+    const big = $('today-big'), meta = $('today-meta'), barbox = $('today-barbox');
+    barbox.hidden = true;
+    if (off || wd === 0 || wd === 6) { big.textContent = 'Выходной'; meta.textContent = off ? off.title : 'суббота или воскресенье, отдыхаем'; return 'off'; }
+    if (!cur) { big.textContent = 'Свободна'; meta.textContent = 'сегодня нет цикла'; return 'free'; }
+    const et = endTime(cur);
+    if (!et) { big.textContent = cur.title; meta.textContent = cur.time || ''; return 'study'; }
+    const end = new Date(now); end.setHours(et[0], et[1], 0, 0);
+    const start = new Date(now); start.setHours(9, 0, 0, 0);
+    const mins = Math.round((end - now) / 60000);
+    big.textContent = 'до ' + et[0] + ':' + pad(et[1]);
+    if (mins <= 0) { meta.textContent = 'занятия закончились, ты свободна'; return 'free'; }
+    if (now < start) { meta.textContent = 'занятия с 9:00, ' + cur.title.toLowerCase(); return 'study'; }
+    const h = Math.floor(mins / 60), m = mins % 60;
+    meta.textContent = 'осталось ' + (h ? h + ' ч ' : '') + m + ' мин';
+    barbox.hidden = false; $('today-bar').style.width = Math.max(2, Math.min(100, Math.round((now - start) / (end - start) * 100))) + '%';
+    return 'study';
+  }
+
+  // ---- заметки и лента ----
+  let tlKey = '', openNote = null;
+  function noteKey(id) { return 'note:' + id; }
+  function buildTimeline(rows, t) {
+    const tl = $('tl');
+    tl.replaceChildren(...rows.map((r) => {
+      const li = el('li');
+      li.dataset.key = r.id;
+      const st = r.end < t ? 'past' : (r.date <= t && t <= r.end ? 'cur' : '');
+      li.className = [st, r.kind === 'выходной' ? 'off' : '', r.kind === 'зачёт' ? 'exam' : ''].filter(Boolean).join(' ');
+      const rail = el('div', 'rail'); rail.appendChild(el('span', 'dot'));
+      const body = el('div', 'body');
+      body.setAttribute('role', 'button'); body.tabIndex = 0;
+      const title = el('span', 't', r.title);
+      if (store.get(noteKey(r.id), '')) title.classList.add('has-note');
+      body.append(title);
+      if (r.time) body.append(el('span', 's', r.time));
+      if (st === 'cur') body.append(el('span', 'nk-tag', 'сейчас'));
+      const toggle = () => { openNote = openNote === r.id ? null : r.id; tlKey = ''; draw(); if (openNote) { const ta = tl.querySelector('textarea'); if (ta) ta.focus(); } };
+      body.addEventListener('click', toggle);
+      body.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggle(); } });
+      li.append(el('div', 'when', range(r.date, r.end)), rail, body);
+      if (openNote === r.id) {
+        const nb = el('div', 'nk-note-box');
+        const ta = el('textarea'); ta.value = store.get(noteKey(r.id), ''); ta.placeholder = 'Что спрашивают, кто ведёт, что взять с собой…'; ta.setAttribute('aria-label', 'Заметка: ' + r.title);
+        let timer = 0;
+        ta.addEventListener('input', () => { clearTimeout(timer); timer = setTimeout(() => { store.set(noteKey(r.id), ta.value); title.classList.toggle('has-note', !!ta.value.trim()); }, 300); });
+        ta.addEventListener('blur', () => { store.set(noteKey(r.id), ta.value); title.classList.toggle('has-note', !!ta.value.trim()); });
+        nb.append(ta);
+        li.append(el('div'), el('div', 'rail'), nb);
+      }
+      return li;
+    }));
+  }
+
+  function draw() {
+    const now = new Date(), t = dstr(now);
+    $('clock').textContent = now.toLocaleString('ru-RU', { weekday: 'long', day: 'numeric', month: 'long', hour: '2-digit', minute: '2-digit' });
+
+    const total = diff(SEM_START, SEM_END) + 1;
+    const done = Math.max(0, Math.min(total, diff(SEM_START, t) + 1));
+    const pct = Math.round(done / total * 100);
+    $('sem-bar').style.width = pct + '%';
+    $('sem-left').textContent = 'Семестр пройден на ' + pct + '%';
+    const toEnd = diff(t, SEM_END);
+    $('sem-right').textContent = toEnd > 0 ? 'до конца ' + days(toEnd) : 'семестр закончен';
+    drawCountdowns();
+
+    const rows = DATA.map((r) => ({ ...r, end: r.end || r.date })).sort((a, b) => a.date < b.date ? -1 : a.date > b.date ? 1 : 0);
+    const study = rows.filter((r) => r.kind !== 'выходной');
+    const offToday = rows.find((r) => r.kind === 'выходной' && r.date <= t && t <= r.end);
+    const cur = study.find((r) => r.date <= t && t <= r.end);
+    const next = study.find((r) => r.date > t);
+
+    const todayState = drawToday(rows, now);
+
+    if (offToday) {
+      $('now-label').textContent = 'Сегодня';
+      $('now-name').textContent = offToday.title;
+      $('now-meta').textContent = 'отдыхаем' + (offToday.end !== offToday.date ? ' до ' + fd(offToday.end) : '');
+      $('now-barbox').hidden = true; $('now-left').textContent = cur ? 'потом снова ' + cur.title.toLowerCase() : '';
+    } else if (cur) {
+      const len = diff(cur.date, cur.end) + 1, d = diff(cur.date, t) + 1, left = diff(t, cur.end);
+      $('now-label').textContent = 'Сейчас идёт';
+      $('now-name').textContent = cur.title;
+      $('now-meta').textContent = range(cur.date, cur.end) + (cur.time ? ' · ' + cur.time : '');
+      $('now-barbox').hidden = false; $('now-bar').style.width = Math.round(d / len * 100) + '%';
+      $('now-left').textContent = left === 0 ? 'последний день цикла' : 'осталось ' + days(left);
+    } else {
+      $('now-label').textContent = 'Сейчас';
+      $('now-name').textContent = next ? 'Перерыв между циклами' : 'Семестр позади';
+      
+      $('now-meta').textContent = ''; $('now-barbox').hidden = true; $('now-left').textContent = '';
+    }
+
+    if (next) {
+      const n = diff(t, next.date);
+      $('next-count').replaceChildren(document.createTextNode(n === 1 ? 'Завтра' : String(n)));
+      if (n > 1) $('next-count').appendChild(el('small', '', plural(n, 'день', 'дня', 'дней')));
+      $('next-name').textContent = next.title;
+      $('next-meta').textContent = range(next.date, next.end) + (next.time ? ' · ' + next.time : '');
+    } else {
+      $('next-count').textContent = '🎉';
+      $('next-name').textContent = 'Больше ничего нет';
+      
+      $('next-meta').textContent = '';
+    }
+
+    const key = t + '|' + rows.map((r) => r.id + r.date + r.end).join(',') + '|' + openNote;
+    if (key !== tlKey && !$('tl').contains(document.activeElement && document.activeElement.tagName === 'TEXTAREA' ? document.activeElement : null)) {
+      tlKey = key; buildTimeline(rows, t);
+    }
+
+    // настроение агентов
+    const hr = now.getHours();
+    let mode = 'normal';
+    if (hr >= 23 || hr < 7) mode = 'sleep';
+    else if (cur && cur.kind === 'зачёт') mode = 'exam';
+    else if (offToday || todayState === 'off') mode = 'party';
+    window.nkMood.mode = mode;
+    const moodChip = $('mood');
+    const moodText = { sleep: '😴 агенты спят', exam: '📚 агенты зубрят', party: '🎉 агенты отдыхают' }[mode];
+    moodChip.hidden = !moodText; if (moodText) moodChip.textContent = moodText;
+
+    const parts = [];
+    if (cur && !offToday) parts.push('Сейчас ' + cur.title.toLowerCase() + ', осталось ' + days(diff(t, cur.end)));
+    if (offToday) parts.push('Сегодня выходной');
+    if (next) { const n = diff(t, next.date); parts.push((n === 1 ? 'завтра' : 'через ' + days(n)) + ' начинается ' + next.title.toLowerCase()); }
+    $('takeaway').textContent = parts.length ? parts.join(', ') + '.' : 'Семестр закончен.';
+  }
+
+  draw();
+  setInterval(draw, 30000);
+  document.addEventListener('visibilitychange', () => { if (!document.hidden) draw(); });
+})();
+</script>
+<script>
+(() => {
+  const cv = document.querySelector('.nk-play');
+  if (!cv || !cv.getContext) return;
+  const ctx = cv.getContext('2d');
+  const reduce = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const COLORS = ['#ff6b6b', '#ffa94d', '#ffd43b', '#69db7c', '#38d9a9', '#4dabf7', '#9775fa', '#f783ac'];
+  const KINDS = ['box', 'paper', 'book', 'pill', 'ball', 'flask'];
+  let W = 0, H = 0, dpr = 1, agents = [], items = [], fx = [], last = 0, raf = 0, time = 0;
+  const rnd = (a, b) => a + Math.random() * (b - a);
+  const pick = (arr) => arr[Math.floor(Math.random() * arr.length)];
+  const mood = () => (window.nkMood && window.nkMood.mode) || 'normal';
+
+  function size() {
+    dpr = Math.min(2, window.devicePixelRatio || 1);
+    W = window.innerWidth; H = window.innerHeight;
+    cv.width = Math.round(W * dpr); cv.height = Math.round(H * dpr);
+    cv.style.width = W + 'px'; cv.style.height = H + 'px';
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  }
+  const spot = () => ({ x: rnd(.04, .96), y: rnd(.08, .96) });
+
+  function init() {
+    const nA = Math.max(4, Math.min(9, Math.round(W / 110)));
+    items = Array.from({ length: nA * 2 }, () => ({ ...spot(), kind: pick(KINDS), color: pick(COLORS), rot: rnd(-.5, .5), held: null, claimed: null, vy: 0, z: 0 }));
+    agents = Array.from({ length: nA }, (_, i) => ({ ...spot(), color: COLORS[i % COLORS.length], doctor: i % 2 === 0, speed: rnd(.035, .06), state: 'idle', timer: rnd(.5, 3), target: null, item: null, goal: null, phase: rnd(0, 6), face: 1, blink: rnd(2, 5), jump: 0, jv: 0, shock: 0 }));
+  }
+
+  function release(a) { if (a.goal) { a.goal.claimed = null; a.goal = null; } }
+
+  function think(a) {
+    const m = mood();
+    if (m === 'sleep') { release(a); a.state = 'idle'; a.timer = rnd(2, 5); return; }
+    if (a.item) { a.state = 'carry'; a.target = spot(); return; }
+    const r = Math.random();
+    if (m === 'party' && r < .45) { a.state = 'dance'; a.timer = rnd(1.5, 3.5); return; }
+    const wantFetch = m === 'exam' ? .85 : .7;
+    if (r < wantFetch) {
+      let free = items.filter((it) => !it.held && !it.claimed);
+      if (m === 'exam') { const books = free.filter((it) => it.kind === 'book' || it.kind === 'paper'); if (books.length) free = books; }
+      if (free.length) { const it = pick(free); it.claimed = a; a.goal = it; a.target = { x: it.x, y: it.y }; a.state = 'fetch'; return; }
+    }
+    if (r < .92) { a.state = 'wander'; a.target = spot(); return; }
+    a.state = 'idle'; a.timer = rnd(1, 3);
+  }
+
+  function dropItem(a, fling) {
+    const it = a.item; if (!it) return;
+    it.held = null; it.x = a.x; it.y = a.y + 0.012; it.rot = rnd(-.5, .5);
+    if (fling) { it.z = 18; it.vy = -60; it.x = Math.min(.97, Math.max(.03, it.x + rnd(-.03, .03))); }
+    a.item = null;
+  }
+
+  function step(a, dt) {
+    const m = mood();
+    a.blink -= dt; if (a.blink < -.12) a.blink = rnd(2, 5);
+    if (a.jump > 0 || a.jv !== 0) { a.jv += 900 * dt; a.jump -= a.jv * dt; if (a.jump <= 0) { a.jump = 0; a.jv = 0; } }
+    if (a.shock > 0) a.shock -= dt;
+    if (m === 'sleep' && (a.state === 'fetch' || a.state === 'wander' || a.state === 'dance')) { release(a); a.state = 'idle'; a.timer = rnd(2, 5); }
+    if (a.state === 'idle' || a.state === 'pickup' || a.state === 'drop' || a.state === 'dance') {
+      a.timer -= dt;
+      if (a.state === 'dance') { a.phase += dt * 8; if (Math.random() < dt * 1.2 && a.jump === 0) { a.jv = -220; a.jump = 0.01; } }
+      if (a.timer <= 0) {
+        if (a.state === 'pickup' && a.goal) { a.item = a.goal; a.goal.held = a; a.goal.claimed = null; a.goal = null; }
+        if (a.state === 'drop' && a.item) { dropItem(a, false); a.state = 'idle'; a.timer = rnd(.8, 2.5); return; }
+        think(a);
+      }
+      return;
+    }
+    const dx = (a.target.x - a.x) * W, dy = (a.target.y - a.y) * H, d = Math.hypot(dx, dy);
+    const v = a.speed * Math.min(W, H) * (a.item ? .8 : 1) * (m === 'exam' ? 1.5 : 1);
+    if (d < 2) {
+      if (a.state === 'fetch') { if (a.goal && !a.goal.held) { a.state = 'pickup'; a.timer = .35; } else { a.goal = null; think(a); } }
+      else if (a.state === 'carry') { a.state = 'drop'; a.timer = .3; }
+      else { a.state = 'idle'; a.timer = rnd(.8, 3); }
+      return;
+    }
+    const s = Math.min(d, v * dt);
+    a.x += dx / d * s / W; a.y += dy / d * s / H;
+    if (Math.abs(dx) > 1) a.face = dx > 0 ? 1 : -1;
+    a.phase += dt * (m === 'exam' ? 14 : 10);
+  }
+
+  // ---- тап по агенту ----
+  function poke(px, py) {
+    let best = null, bd = 22;
+    agents.forEach((a) => { const d = Math.hypot(a.x * W - px, a.y * H - a.jump - py); if (d < bd) { bd = d; best = a; } });
+    if (!best) return false;
+    best.jv = -260; best.jump = 0.01; best.shock = 1.2;
+    if (best.item) dropItem(best, true);
+    release(best);
+    best.state = 'wander'; const ang = Math.atan2(best.y * H - py, best.x * W - px);
+    best.target = { x: Math.min(.96, Math.max(.04, best.x + Math.cos(ang) * .12)), y: Math.min(.96, Math.max(.08, best.y + Math.sin(ang) * .08)) };
+    for (let i = 0; i < 6; i++) fx.push({ type: 'spark', x: best.x * W, y: best.y * H - 10, vx: rnd(-60, 60), vy: rnd(-90, -30), life: .6, color: best.color });
+    if (reduce) frame(performance.now());
+    return true;
+  }
+  document.addEventListener('pointerdown', (e) => {
+    if (e.target.closest && e.target.closest('button, input, textarea, a, select, label, [role=button], .nk-card')) return;
+    poke(e.clientX, e.clientY);
+  }, { passive: true });
+
+  // ---- эффекты ----
+  function spawnFx(dt) {
+    const m = mood();
+    if (m === 'party' && Math.random() < dt * 14) fx.push({ type: 'confetti', x: rnd(0, W), y: -6, vx: rnd(-20, 20), vy: rnd(40, 90), rot: rnd(0, 6), vr: rnd(-6, 6), life: 12, color: pick(COLORS) });
+    if (m === 'sleep') agents.forEach((a) => { if (Math.random() < dt * .5) fx.push({ type: 'z', x: a.x * W + 6, y: a.y * H - 16, vx: 8, vy: -12, life: 2.2, s: rnd(7, 11) }); });
+    if (m === 'exam') agents.forEach((a) => { if (Math.random() < dt * .35) fx.push({ type: 'drop', x: a.x * W + 8 * a.face, y: a.y * H - 10, vx: 0, vy: 30, life: .7 }); });
+  }
+  function stepFx(dt) {
+    fx.forEach((p) => { p.x += p.vx * dt; p.y += p.vy * dt; p.life -= dt; if (p.type === 'spark') p.vy += 300 * dt; if (p.type === 'confetti') p.rot += p.vr * dt; });
+    fx = fx.filter((p) => p.life > 0 && p.y < H + 10).slice(-300);
+    items.forEach((it) => { if (it.z > 0 || it.vy) { it.vy += 400 * dt; it.z -= it.vy * dt; if (it.z <= 0) { it.z = 0; it.vy = 0; } } });
+  }
+  function drawFx() {
+    fx.forEach((p) => {
+      const al = Math.min(1, p.life * 2);
+      ctx.save(); ctx.globalAlpha = al;
+      if (p.type === 'confetti') { ctx.translate(p.x, p.y); ctx.rotate(p.rot); ctx.fillStyle = p.color; ctx.fillRect(-3, -1.5, 6, 3); }
+      else if (p.type === 'spark') { ctx.fillStyle = p.color; ctx.beginPath(); ctx.arc(p.x, p.y, 1.8, 0, 7); ctx.fill(); }
+      else if (p.type === 'z') { ctx.fillStyle = 'rgba(120,130,160,.9)'; ctx.font = 'bold ' + p.s + 'px sans-serif'; ctx.fillText('z', p.x, p.y); }
+      else if (p.type === 'drop') { ctx.fillStyle = '#74c0fc'; ctx.beginPath(); ctx.moveTo(p.x, p.y - 3); ctx.quadraticCurveTo(p.x + 2.5, p.y + 1, p.x, p.y + 2); ctx.quadraticCurveTo(p.x - 2.5, p.y + 1, p.x, p.y - 3); ctx.fill(); }
+      ctx.restore();
+    });
+  }
+
+  function rr(x, y, w, h, r) { ctx.beginPath(); ctx.roundRect ? ctx.roundRect(x, y, w, h, r) : ctx.rect(x, y, w, h); }
+
+  function drawItem(it, x, y) {
+    ctx.save(); ctx.translate(x, y - (it.z || 0)); ctx.rotate(it.held ? 0 : it.rot);
+    ctx.lineWidth = 1; ctx.strokeStyle = 'rgba(0,0,0,.28)';
+    switch (it.kind) {
+      case 'box': ctx.fillStyle = '#d9a066'; rr(-6, -5, 12, 10, 1.5); ctx.fill(); ctx.stroke(); ctx.beginPath(); ctx.moveTo(-6, -1); ctx.lineTo(6, -1); ctx.stroke(); break;
+      case 'paper': ctx.fillStyle = '#fffdf5'; rr(-5, -6.5, 10, 13, 1); ctx.fill(); ctx.stroke(); ctx.strokeStyle = 'rgba(0,0,0,.25)'; for (let i = -3; i <= 3; i += 2.5) { ctx.beginPath(); ctx.moveTo(-3, i); ctx.lineTo(3, i); ctx.stroke(); } break;
+      case 'book': ctx.fillStyle = it.color; rr(-6, -4.5, 12, 9, 1.5); ctx.fill(); ctx.stroke(); ctx.fillStyle = '#fff'; ctx.fillRect(-6, 2.5, 12, 1.5); break;
+      case 'pill': ctx.rotate(.6); ctx.fillStyle = it.color; rr(-6, -2.5, 6, 5, 2.5); ctx.fill(); ctx.fillStyle = '#ffffff'; rr(0, -2.5, 6, 5, 2.5); ctx.fill(); rr(-6, -2.5, 12, 5, 2.5); ctx.stroke(); break;
+      case 'ball': ctx.fillStyle = it.color; ctx.beginPath(); ctx.arc(0, 0, 4.5, 0, 7); ctx.fill(); ctx.stroke(); ctx.fillStyle = 'rgba(255,255,255,.6)'; ctx.beginPath(); ctx.arc(-1.5, -1.5, 1.4, 0, 7); ctx.fill(); break;
+      case 'flask': ctx.fillStyle = 'rgba(255,255,255,.85)'; ctx.beginPath(); ctx.moveTo(-1.8, -6); ctx.lineTo(1.8, -6); ctx.lineTo(1.8, -2); ctx.lineTo(5, 5); ctx.lineTo(-5, 5); ctx.lineTo(-1.8, -2); ctx.closePath(); ctx.fill(); ctx.stroke(); ctx.fillStyle = it.color; ctx.beginPath(); ctx.moveTo(-3.6, 1.8); ctx.lineTo(3.6, 1.8); ctx.lineTo(5, 5); ctx.lineTo(-5, 5); ctx.closePath(); ctx.fill(); break;
+    }
+    ctx.restore();
+  }
+
+  function drawAgent(a) {
+    const m = mood();
+    const x = a.x * W, y = a.y * H, moving = a.state === 'fetch' || a.state === 'carry' || a.state === 'wander';
+    const asleep = m === 'sleep' && a.state === 'idle';
+    const bob = moving ? Math.abs(Math.sin(a.phase)) * 1.6 : (a.state === 'dance' ? Math.abs(Math.sin(a.phase)) * 2.5 : Math.sin(time / .6 + a.phase) * (asleep ? .9 : .5));
+    const squat = a.state === 'pickup' || a.state === 'drop' ? 2 : (asleep ? 2.5 : 0);
+    ctx.save(); ctx.translate(x, y);
+    ctx.fillStyle = 'rgba(0,0,0,.12)'; ctx.beginPath(); ctx.ellipse(0, 9, 8 - Math.min(4, a.jump / 10), 2.2, 0, 0, 7); ctx.fill();
+    ctx.translate(0, -a.jump);
+    if (a.state === 'dance') ctx.rotate(Math.sin(a.phase) * .18);
+    ctx.strokeStyle = 'rgba(0,0,0,.35)'; ctx.lineWidth = 1.6; ctx.lineCap = 'round';
+    const sw = moving ? Math.sin(a.phase) * 3 : 0;
+    ctx.beginPath(); ctx.moveTo(-3, 4); ctx.lineTo(-3 + sw, 9); ctx.moveTo(3, 4); ctx.lineTo(3 - sw, 9); ctx.stroke();
+    ctx.translate(0, -bob + squat);
+    let armL, armR;
+    if (a.item) { armL = -7; armR = -7; }
+    else if (a.state === 'dance' || a.shock > 0) { armL = -8 + Math.sin(a.phase) * 2; armR = -8 - Math.sin(a.phase) * 2; }
+    else if (asleep) { armL = 3; armR = 3; }
+    else { const s2 = moving ? Math.sin(a.phase + 1.5) * 2 : 1; armL = s2; armR = -s2; }
+    ctx.beginPath(); ctx.moveTo(-7, -1); ctx.lineTo(-9.5, armL); ctx.moveTo(7, -1); ctx.lineTo(9.5, armR); ctx.stroke();
+    // тело
+    ctx.fillStyle = a.color; ctx.lineWidth = 1;
+    ctx.beginPath(); ctx.ellipse(0, -1, 8, 7.5, 0, 0, 7); ctx.fill(); ctx.stroke();
+    if (a.doctor) {
+      // халат
+      ctx.save(); ctx.beginPath(); ctx.ellipse(0, -1, 8, 7.5, 0, 0, 7); ctx.clip();
+      ctx.fillStyle = '#ffffff'; ctx.fillRect(-9, 2, 18, 8);
+      ctx.strokeStyle = 'rgba(0,0,0,.25)'; ctx.beginPath(); ctx.moveTo(0, 2); ctx.lineTo(0, 7); ctx.stroke();
+      ctx.restore();
+      ctx.strokeStyle = 'rgba(0,0,0,.35)';
+      ctx.beginPath(); ctx.ellipse(0, -1, 8, 7.5, 0, 0, 7); ctx.stroke();
+      // шапочка
+      ctx.fillStyle = '#ffffff'; rr(-5.5, -12, 11, 4.5, 1.2); ctx.fill(); ctx.stroke();
+      ctx.fillStyle = '#e03131'; ctx.fillRect(-.6, -11.3, 1.2, 3.2); ctx.fillRect(-1.6, -10.3, 3.2, 1.2);
+    } else {
+      ctx.beginPath(); ctx.moveTo(0, -8.5); ctx.lineTo(0, -12); ctx.stroke();
+      ctx.beginPath(); ctx.arc(0, -13, 1.8, 0, 7); ctx.fillStyle = a.color; ctx.fill(); ctx.stroke();
+    }
+    // глаза
+    const ex = a.face * 1.5;
+    if (asleep || a.blink < 0) {
+      ctx.strokeStyle = '#222'; ctx.lineWidth = 1.1;
+      ctx.beginPath(); ctx.moveTo(-4.8 + ex, -2); ctx.quadraticCurveTo(-3 + ex, -0.8, -1.2 + ex, -2); ctx.moveTo(1.2 + ex, -2); ctx.quadraticCurveTo(3 + ex, -0.8, 4.8 + ex, -2); ctx.stroke();
+    } else {
+      const big = a.shock > 0 ? 1.35 : 1;
+      ctx.fillStyle = '#fff'; ctx.beginPath(); ctx.ellipse(-3 + ex, -2, 2.2 * big, 2.4 * big, 0, 0, 7); ctx.ellipse(3 + ex, -2, 2.2 * big, 2.4 * big, 0, 0, 7); ctx.fill();
+      ctx.fillStyle = '#222'; ctx.beginPath(); ctx.arc(-3 + ex + a.face * .7, -1.7, a.shock > 0 ? .8 : 1.1, 0, 7); ctx.arc(3 + ex + a.face * .7, -1.7, a.shock > 0 ? .8 : 1.1, 0, 7); ctx.fill();
+    }
+    if (a.shock > 0) { ctx.fillStyle = '#e03131'; ctx.font = 'bold 10px sans-serif'; ctx.textAlign = 'center'; ctx.fillText('!', 0, a.doctor ? -15 : -17); }
+    if (a.item) drawItem(a.item, 0, a.doctor ? -18 : -19);
+    ctx.restore();
+  }
+
+  function frame(ts) {
+    const dt = Math.min(.05, (ts - (last || ts)) / 1000); last = ts; time += dt;
+    if (!reduce) { agents.forEach((a) => step(a, dt)); spawnFx(dt); stepFx(dt); }
+    ctx.clearRect(0, 0, W, H);
+    const all = [...items.filter((it) => !it.held).map((it) => ({ y: it.y, f: () => drawItem(it, it.x * W, it.y * H) })),
+                 ...agents.map((a) => ({ y: a.y, f: () => drawAgent(a) }))];
+    all.sort((p, q) => p.y - q.y).forEach((o) => o.f());
+    drawFx();
+    if (!reduce) raf = requestAnimationFrame(frame);
+  }
+
+  size(); init();
+  window.addEventListener('resize', () => { size(); if (reduce) frame(performance.now()); });
+  document.addEventListener('visibilitychange', () => {
+    if (reduce) return;
+    if (document.hidden) { cancelAnimationFrame(raf); } else { last = 0; raf = requestAnimationFrame(frame); }
+  });
+  raf = requestAnimationFrame(frame);
+})();
+</script>
+</body>
+</html>
